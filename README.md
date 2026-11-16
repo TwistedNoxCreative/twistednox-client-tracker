@@ -29,7 +29,8 @@ The database uses a single table named `clients` hosted on Supabase (PostgreSQL)
 | `name` | `TEXT` | `NOT NULL` | Client / Streamer / Brand name |
 | `email` | `TEXT` | `NULLABLE` | Client contact email |
 | `phone` | `TEXT` | `NULLABLE` | Client contact phone number or Discord tag |
-| `project_notes` | `TEXT` | `NULLABLE` | Project scope, deliverables, package details |
+| `notes` | `TEXT` | `NULLABLE` | Project notes, scope, deliverables, brief (primary) |
+| `project_notes` | `TEXT` | `NULLABLE` | Legacy alias synced with `notes` for backward compatibility |
 | `last_contact_date` | `DATE` | `DEFAULT CURRENT_DATE` | Date of last client communication |
 | `status` | `VARCHAR(50)` | `DEFAULT 'New Inquiry' NOT NULL` | Current status (constrained to allowed list) |
 
@@ -151,13 +152,32 @@ git push -u origin main
 
 ## 🛡️ Row Level Security & Production Security Advice
 
-### How RLS is Configured in `schema.sql`
-By default, `schema.sql` applies four policies for `anon` (unauthenticated public browser requests):
+### How RLS & Permissions are Configured in `schema.sql`
+By default, `schema.sql` applies explicit schema and table grants, followed by clean permissive policies for `anon` and `authenticated`:
 ```sql
-CREATE POLICY "Allow public read access" ON clients FOR SELECT TO anon, authenticated USING (true);
-CREATE POLICY "Allow public insert access" ON clients FOR INSERT TO anon, authenticated WITH CHECK (true);
-CREATE POLICY "Allow public update access" ON clients FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public delete access" ON clients FOR DELETE TO anon, authenticated USING (true);
+-- Explicit Permissions
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.clients TO anon, authenticated, service_role;
+
+-- Clean Permissive RLS Policies
+CREATE POLICY "Allow anon and auth read" ON public.clients FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "Allow anon and auth insert" ON public.clients FOR INSERT TO anon, authenticated WITH CHECK (true);
+CREATE POLICY "Allow anon and auth update" ON public.clients FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Allow anon and auth delete" ON public.clients FOR DELETE TO anon, authenticated USING (true);
+
+-- Realtime Publication
+ALTER TABLE public.clients REPLICA IDENTITY FULL;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.clients;
+```
+
+### ⚡ Instant Diagnostic One-Liner
+If you ever encounter connection issues or suspect an RLS misconfiguration, you can run this one-liner in the Supabase SQL Editor to test if RLS is blocking queries:
+```sql
+ALTER TABLE public.clients DISABLE ROW LEVEL SECURITY;
+```
+If your dashboard immediately connects and loads data, re-run Section 4 of `schema.sql` and re-enable RLS:
+```sql
+ALTER TABLE public.clients ENABLE ROW LEVEL SECURITY;
 ```
 
 ### Security Considerations for GitHub Pages

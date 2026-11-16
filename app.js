@@ -32,7 +32,7 @@
       name: 'Valkyrie_Streamz (Sarah Jenkins)',
       email: 'sarah@valkyriestreamz.tv',
       phone: '+1 (555) 234-5678',
-      project_notes: 'Cyber-goth animated stream pack: Starting Soon, BRB, Ending, and Gameplay overlays. Webcam border with reactive audio visualizer. Deliverables in 1080p 60fps WebM format.',
+      notes: 'Cyber-goth animated stream pack: Starting Soon, BRB, Ending, and Gameplay overlays. Webcam border with reactive audio visualizer. Deliverables in 1080p 60fps WebM format.',
       last_contact_date: getOffsetDateString(-1),
       status: 'In Progress'
     },
@@ -42,7 +42,7 @@
       name: 'KitsuneLuna (VTuber Debut)',
       email: 'luna.kitsune.mgmt@gmail.com',
       phone: 'Discord: LunaKitsune#7777',
-      project_notes: 'Full VTuber branding package: Japanese folklore logo, Twitter banner, Twitch offline screen, 6 sub badges (fox spirits), and 10 animated chibi emotes. Currently reviewing round 2 color revisions.',
+      notes: 'Full VTuber branding package: Japanese folklore logo, Twitter banner, Twitch offline screen, 6 sub badges (fox spirits), and 10 animated chibi emotes. Currently reviewing round 2 color revisions.',
       last_contact_date: getOffsetDateString(-2),
       status: 'Revisions'
     },
@@ -52,7 +52,7 @@
       name: 'ShadowRogue99 (Marcus Vance)',
       email: 'marcus.vance99@outlook.com',
       phone: '+1 (555) 345-6789',
-      project_notes: 'YouTube & Kick channel overhaul. Requested animated stinger transition with custom dagger swoosh SFX, plus 3 custom alert popups (Follow, Sub, Raid). Awaiting contract sign-off.',
+      notes: 'YouTube & Kick channel overhaul. Requested animated stinger transition with custom dagger swoosh SFX, plus 3 custom alert popups (Follow, Sub, Raid). Awaiting contract sign-off.',
       last_contact_date: getOffsetDateString(0),
       status: 'New Inquiry'
     },
@@ -62,7 +62,7 @@
       name: 'PixelKnight (David Chen)',
       email: 'pixelknightgaming@gmail.com',
       phone: '+1 (555) 654-3210',
-      project_notes: '16-bit retro arcade stream package: animated pixel bedroom scene, 8-bit chiptune stinger, and custom alert box CSS. Delivered final master files to client Google Drive.',
+      notes: '16-bit retro arcade stream package: animated pixel bedroom scene, 8-bit chiptune stinger, and custom alert box CSS. Delivered final master files to client Google Drive.',
       last_contact_date: getOffsetDateString(-14),
       status: 'Completed'
     },
@@ -72,7 +72,7 @@
       name: 'EchoNebula (Aria Montgomery)',
       email: 'aria@echonebula.com',
       phone: '+1 (555) 987-1234',
-      project_notes: 'Consultation for 3D model texturing and stream alert animations. Client postponed stream launch indefinitely due to personal scheduling conflict.',
+      notes: 'Consultation for 3D model texturing and stream alert animations. Client postponed stream launch indefinitely due to personal scheduling conflict.',
       last_contact_date: getOffsetDateString(-25),
       status: 'Cancelled'
     },
@@ -82,7 +82,7 @@
       name: 'BobaBeats Lo-Fi (Kenji Sato)',
       email: 'kenji@bobabeats.media',
       phone: '+1 (555) 432-8765',
-      project_notes: '24/7 Lo-Fi music stream animation: cozy coffee shop scene with rain on windows, steaming cup, sleeping cat loop, and day-to-night lighting transitions. In final rendering.',
+      notes: '24/7 Lo-Fi music stream animation: cozy coffee shop scene with rain on windows, steaming cup, sleeping cat loop, and day-to-night lighting transitions. In final rendering.',
       last_contact_date: getOffsetDateString(-3),
       status: 'In Progress'
     },
@@ -92,7 +92,7 @@
       name: 'DragonSlayer_FPS (Tyler Brooks)',
       email: 'tyler.brooks.gg@gmail.com',
       phone: 'Discord: DragonTyler#1337',
-      project_notes: 'High-energy competitive FPS branding: aggressive red/carbon-fiber theme, custom scoreboard HUD overlay, Twitch info panels, and animated Hype Train overlay.',
+      notes: 'High-energy competitive FPS branding: aggressive red/carbon-fiber theme, custom scoreboard HUD overlay, Twitch info panels, and animated Hype Train overlay.',
       last_contact_date: getOffsetDateString(0),
       status: 'New Inquiry'
     }
@@ -254,7 +254,11 @@
     const savedDemo = localStorage.getItem(STORAGE_KEY_DEMO);
     if (savedDemo) {
       try {
-        allClients = JSON.parse(savedDemo);
+        const parsed = JSON.parse(savedDemo);
+        allClients = parsed.map(c => ({
+          ...c,
+          notes: c.notes !== undefined && c.notes !== null ? c.notes : (c.project_notes || '')
+        }));
       } catch (e) {
         allClients = [...INITIAL_DEMO_CLIENTS];
         saveDemoClients();
@@ -323,7 +327,11 @@
 
     if (isDemoMode) {
       const saved = localStorage.getItem(STORAGE_KEY_DEMO);
-      allClients = saved ? JSON.parse(saved) : [...INITIAL_DEMO_CLIENTS];
+      const parsed = saved ? JSON.parse(saved) : [...INITIAL_DEMO_CLIENTS];
+      allClients = parsed.map(c => ({
+        ...c,
+        notes: c.notes !== undefined && c.notes !== null ? c.notes : (c.project_notes || '')
+      }));
       applyFilterAndRender();
       return;
     }
@@ -336,7 +344,10 @@
 
       if (error) throw error;
 
-      allClients = Array.isArray(data) ? data : [];
+      allClients = (Array.isArray(data) ? data : []).map(c => ({
+        ...c,
+        notes: c.notes !== undefined && c.notes !== null ? c.notes : (c.project_notes || '')
+      }));
       applyFilterAndRender();
     } catch (err) {
       console.error('fetchClients failed:', err);
@@ -353,11 +364,15 @@
       return false;
     }
 
+    const noteValue = clientData.notes !== undefined && clientData.notes !== null
+      ? clientData.notes.trim()
+      : (clientData.project_notes ? clientData.project_notes.trim() : null);
+
     const payload = {
       name: clientData.name.trim(),
       email: clientData.email ? clientData.email.trim() : null,
       phone: clientData.phone ? clientData.phone.trim() : null,
-      project_notes: clientData.project_notes ? clientData.project_notes.trim() : null,
+      notes: noteValue,
       last_contact_date: clientData.last_contact_date || getOffsetDateString(0),
       status: clientData.status || 'New Inquiry'
     };
@@ -366,7 +381,8 @@
       const newRecord = {
         id: crypto.randomUUID ? crypto.randomUUID() : 'demo-' + Date.now(),
         created_at: new Date().toISOString(),
-        ...payload
+        ...payload,
+        project_notes: noteValue
       };
       allClients.unshift(newRecord);
       saveDemoClients();
@@ -376,10 +392,20 @@
     }
 
     try {
-      const { data, error } = await supabase
+      // Primary insert with `notes`. Fallback to `project_notes` if table schema is legacy.
+      let { data, error } = await supabase
         .from('clients')
         .insert([payload])
         .select();
+
+      if (error && error.message && error.message.includes('notes')) {
+        const fallbackPayload = { ...payload };
+        delete fallbackPayload.notes;
+        fallbackPayload.project_notes = noteValue;
+        const retryRes = await supabase.from('clients').insert([fallbackPayload]).select();
+        data = retryRes.data;
+        error = retryRes.error;
+      }
 
       if (error) throw error;
 
@@ -396,11 +422,15 @@
   async function updateClient(id, updatedData) {
     if (!id) return false;
 
+    const noteValue = updatedData.notes !== undefined && updatedData.notes !== null
+      ? updatedData.notes.trim()
+      : (updatedData.project_notes ? updatedData.project_notes.trim() : null);
+
     const payload = {
       name: updatedData.name.trim(),
       email: updatedData.email ? updatedData.email.trim() : null,
       phone: updatedData.phone ? updatedData.phone.trim() : null,
-      project_notes: updatedData.project_notes ? updatedData.project_notes.trim() : null,
+      notes: noteValue,
       last_contact_date: updatedData.last_contact_date || null,
       status: updatedData.status
     };
@@ -408,7 +438,11 @@
     if (isDemoMode) {
       const index = allClients.findIndex(c => c.id === id);
       if (index !== -1) {
-        allClients[index] = { ...allClients[index], ...payload };
+        allClients[index] = { 
+          ...allClients[index], 
+          ...payload, 
+          project_notes: noteValue 
+        };
         saveDemoClients();
         showToast('Client details updated in Demo Sandbox.', 'success');
         applyFilterAndRender();
@@ -418,10 +452,19 @@
     }
 
     try {
-      const { error } = await supabase
+      // Primary update with `notes`. Fallback to `project_notes` if table schema is legacy.
+      let { error } = await supabase
         .from('clients')
         .update(payload)
         .eq('id', id);
+
+      if (error && error.message && error.message.includes('notes')) {
+        const fallbackPayload = { ...payload };
+        delete fallbackPayload.notes;
+        fallbackPayload.project_notes = noteValue;
+        const retryRes = await supabase.from('clients').update(fallbackPayload).eq('id', id);
+        error = retryRes.error;
+      }
 
       if (error) throw error;
 
@@ -519,7 +562,7 @@
         const name = (c.name || '').toLowerCase();
         const email = (c.email || '').toLowerCase();
         const phone = (c.phone || '').toLowerCase();
-        const notes = (c.project_notes || '').toLowerCase();
+        const notes = (c.notes || c.project_notes || '').toLowerCase();
         const status = (c.status || '').toLowerCase();
         return name.includes(q) || email.includes(q) || phone.includes(q) || notes.includes(q) || status.includes(q);
       });
@@ -585,7 +628,8 @@
       const safeName = escapeHtml(client.name || 'Unnamed Client');
       const safeEmail = client.email ? escapeHtml(client.email) : '';
       const safePhone = client.phone ? escapeHtml(client.phone) : '';
-      const safeNotes = client.project_notes ? escapeHtml(client.project_notes) : 'No project brief provided.';
+      const rawNotes = client.notes || client.project_notes || '';
+      const safeNotes = rawNotes ? escapeHtml(rawNotes) : 'No notes provided.';
       const safeDate = client.last_contact_date ? formatDate(client.last_contact_date) : '—';
       const status = client.status || 'New Inquiry';
 
@@ -707,20 +751,20 @@
         const name = (c.name || '').toLowerCase();
         const email = (c.email || '').toLowerCase();
         const phone = (c.phone || '').toLowerCase();
-        const notes = (c.project_notes || '').toLowerCase();
+        const notes = (c.notes || c.project_notes || '').toLowerCase();
         const status = (c.status || '').toLowerCase();
         return name.includes(q) || email.includes(q) || phone.includes(q) || notes.includes(q) || status.includes(q);
       });
     }
 
-    const headers = ['ID', 'Name', 'Email', 'Phone', 'Project Notes', 'Last Contact Date', 'Status', 'Created At'];
+    const headers = ['ID', 'Name', 'Email', 'Phone', 'Notes', 'Last Contact Date', 'Status', 'Created At'];
     
     const rows = recordsToExport.map(c => [
       c.id || '',
       c.name || '',
       c.email || '',
       c.phone || '',
-      c.project_notes || '',
+      c.notes || c.project_notes || '',
       c.last_contact_date || '',
       c.status || '',
       c.created_at || ''
@@ -891,7 +935,7 @@
       const phone = document.getElementById('addLeadPhone').value;
       const status = document.getElementById('addLeadStatus').value;
       const last_contact_date = elements.addLeadDate.value;
-      const project_notes = document.getElementById('addLeadNotes').value;
+      const notes = document.getElementById('addLeadNotes').value;
 
       const success = await createClient({
         name,
@@ -899,7 +943,7 @@
         phone,
         status,
         last_contact_date,
-        project_notes
+        notes
       });
 
       if (success) {
@@ -916,7 +960,7 @@
       const phone = elements.editClientPhone.value;
       const status = elements.editClientStatus.value;
       const last_contact_date = elements.editClientDate.value;
-      const project_notes = elements.editClientNotes.value;
+      const notes = elements.editClientNotes.value;
 
       const success = await updateClient(id, {
         name,
@@ -924,7 +968,7 @@
         phone,
         status,
         last_contact_date,
-        project_notes
+        notes
       });
 
       if (success) {
@@ -1025,7 +1069,7 @@
     elements.editClientPhone.value = client.phone || '';
     elements.editClientStatus.value = client.status || 'New Inquiry';
     elements.editClientDate.value = client.last_contact_date || '';
-    elements.editClientNotes.value = client.project_notes || '';
+    elements.editClientNotes.value = client.notes || client.project_notes || '';
 
     openModal('editClientModal');
     setTimeout(() => {

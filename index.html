@@ -207,7 +207,7 @@
               Client / Streamer <span class="sort-icon" id="sortIcon-name">▲</span>
             </th>
             <th scope="col">Contact Info</th>
-            <th scope="col">Project Scope & Brief</th>
+            <th scope="col">Notes</th>
             <th class="sortable" data-sort="last_contact_date" scope="col">
               Last Contact <span class="sort-icon" id="sortIcon-last_contact_date">↕</span>
             </th>
@@ -306,9 +306,10 @@
           </div>
 
           <div class="cyber-form-group">
-            <label class="cyber-label" for="addLeadNotes">Project Scope & Deliverables</label>
+            <label class="cyber-label" for="addLeadNotes">Notes</label>
             <textarea 
               id="addLeadNotes" 
+              name="notes"
               class="cyber-textarea" 
               placeholder="e.g. Cyberpunk animated overlay pack: Starting Soon screen, Twitch webcam border, reactive audio stinger, 6 sub badges..."
             ></textarea>
@@ -392,10 +393,12 @@
           </div>
 
           <div class="cyber-form-group">
-            <label class="cyber-label" for="editClientNotes">Project Scope & Deliverables</label>
+            <label class="cyber-label" for="editClientNotes">Notes</label>
             <textarea 
               id="editClientNotes" 
+              name="notes"
               class="cyber-textarea"
+              placeholder="Project notes, deliverables, and specs..."
             ></textarea>
           </div>
         </div>
